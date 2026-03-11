@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "wishos-claude-plugins",
+  "description": "wishos 自用的 Claude 插件集合，包含批量管理 git 仓库等工具",
+  "owner": {
+    "name": "wishos",
+    "email": ""
+  },
+  "plugins": [
+    {
+      "name": "git-multi-repo",
+      "description": "批量管理多个 git 仓库，支持批量更新和分支切换",
+      "version": "1.0.0",
+      "author": {
+        "name": "wishos",
+        "email": ""
+      },
+      "source": "./plugins/git-multi-repo",
+      "category": "productivity",
+      "homepage": "https://github.com/wishos/claude-plugins"
+    }
+  ]
+}

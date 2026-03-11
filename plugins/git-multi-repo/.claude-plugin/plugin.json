@@ -1,0 +1,7 @@
+{
+  "name": "git-multi-repo",
+  "version": "1.0.0",
+  "description": "批量管理多个 git 仓库的插件，支持批量更新和分支切换",
+  "author": "wishos",
+  "homepage": ""
+}

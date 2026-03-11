@@ -1,0 +1,12 @@
+# Git
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Test
+test/
+tests/
+__tests__/
+*.test.*
+*.spec.*

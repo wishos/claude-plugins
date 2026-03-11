@@ -45,5 +45,5 @@ plugins/<plugin-name>/
 - Scripts use color codes for output formatting (RED, GREEN, YELLOW)
 - Default working directory is current working directory (`$PWD`)
 - Commands are triggered by specific phrases in user input (Chinese or English)
-- Documentation: Always maintain both Chinese (`docs/README-zh.md`) and English (`docs/README-en.md`) versions
-- README.md is an HTML file with language switcher, default to Chinese
+- Documentation: Maintain both Chinese (`docs/README-zh.md`) and English (`docs/README-en.md`) versions
+- README.md: Pure Markdown in Chinese, with link to English version at top

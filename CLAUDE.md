@@ -39,6 +39,7 @@ plugins/<plugin-name>/
 ## Existing Plugins
 
 - **git-multi-repo**: Batch manage multiple git repositories (pull all, switch branches)
+- **translate-github**: Translate GitHub project docs (EN→CN) with incremental translation support
 
 ## Common Patterns
 

@@ -30,6 +30,32 @@ wishos 自用的 Claude 插件集合。
 ./plugins/git-multi-repo/scripts/git-multi-repo.sh "$PWD" branch-name
 ```
 
+### translate-github
+
+翻译 GitHub 项目文档（英文→中文），支持增量翻译。
+
+| 功能 | 触发语句 |
+|------|----------|
+| 翻译文档 | `/translate-github` · `翻译文档` · `translate github docs` |
+| 增量更新 | `更新翻译` · `增量翻译` · `update translation` |
+| 查看状态 | `翻译状态` · `translation status` |
+
+**使用**
+
+```bash
+# 初始化翻译（指定翻译 docs 目录）
+./plugins/translate-github/scripts/translate-github.sh init "$PWD" docs
+
+# 查看需要翻译的文件
+./plugins/translate-github/scripts/translate-github.sh diff "$PWD" docs
+
+# 保存翻译状态
+./plugins/translate-github/scripts/translate-github.sh save "$PWD" docs
+
+# 查看翻译状态
+./plugins/translate-github/scripts/translate-github.sh status "$PWD"
+```
+
 ---
 
 ## 目录结构

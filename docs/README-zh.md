@@ -46,6 +46,70 @@ wishos 自用的 Claude 插件集合。
 - 本地有未提交的更改时，会跳过该仓库并提示
 - 输出使用 Unicode 符号和表格格式，美观清晰
 
+### translate-github
+
+翻译 GitHub 项目文档的插件（英文→中文），支持增量翻译。
+
+#### 功能
+
+- 将指定目录下的英文文档翻译为中文
+- 译文输出到项目根目录的 `wishos-docs/` 目录，保持原始目录结构
+- 基于 git 版本的增量翻译，只翻译有变更的文件
+- 翻译状态持久化，支持中断恢复
+
+#### 触发语句
+
+**翻译文档**：
+- /translate-github
+- 翻译文档
+- 翻译这个项目
+- translate github docs
+- translate this project
+
+**增量更新翻译**：
+- 更新翻译
+- 增量翻译
+- update translation
+
+**查看翻译状态**：
+- 翻译状态
+- translation status
+
+#### 使用方式
+
+```bash
+# 初始化翻译环境（指定翻译 docs 和 guides 目录）
+./plugins/translate-github/scripts/translate-github.sh init "$PWD" docs guides
+
+# 列出所有可翻译文件
+./plugins/translate-github/scripts/translate-github.sh list "$PWD" docs guides
+
+# 检测需要翻译的变更文件（增量）
+./plugins/translate-github/scripts/translate-github.sh diff "$PWD" docs guides
+
+# 保存翻译状态
+./plugins/translate-github/scripts/translate-github.sh save "$PWD" docs guides
+
+# 查看翻译状态
+./plugins/translate-github/scripts/translate-github.sh status "$PWD"
+```
+
+#### 翻译规则
+
+- 代码块和行内代码不翻译
+- URL 和链接地址不翻译（链接文字翻译）
+- 命名标识符（变量名、函数名、类名等）不翻译
+- 品牌和专有名词不翻译
+- 保持 Markdown 格式结构不变
+- 技术术语首次出现括号标注英文原文
+
+#### 注意事项
+
+- 支持 `.md`、`.txt`、`.rst` 文件类型
+- 翻译状态存储在 `wishos-docs/.translate-state` 文件中
+- 翻译中断后重新运行会自动恢复（幂等设计）
+- 自动排除 `node_modules`、`.git` 等目录
+
 ## 添加新插件
 
 参考 `plugins/git-multi-repo` 的结构：

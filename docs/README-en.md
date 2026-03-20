@@ -46,6 +46,70 @@ A plugin for batch managing multiple git repositories.
 - Skip repositories with uncommitted changes and show warning
 - Output uses Unicode symbols and table format for clarity
 
+### translate-github
+
+A plugin for translating GitHub project documentation (English to Chinese) with incremental translation support.
+
+#### Features
+
+- Translate English documents in specified directories to Chinese
+- Output translations to `wishos-docs/` directory in project root, preserving original directory structure
+- Git version-based incremental translation - only translates changed files
+- Persistent translation state with interrupt recovery support
+
+#### Trigger Phrases
+
+**Translate Docs**:
+- /translate-github
+- 翻译文档
+- 翻译这个项目
+- translate github docs
+- translate this project
+
+**Incremental Update**:
+- 更新翻译
+- 增量翻译
+- update translation
+
+**Check Status**:
+- 翻译状态
+- translation status
+
+#### Usage
+
+```bash
+# Initialize translation environment (translate docs and guides directories)
+./plugins/translate-github/scripts/translate-github.sh init "$PWD" docs guides
+
+# List all translatable files
+./plugins/translate-github/scripts/translate-github.sh list "$PWD" docs guides
+
+# Detect changed files for incremental translation
+./plugins/translate-github/scripts/translate-github.sh diff "$PWD" docs guides
+
+# Save translation state
+./plugins/translate-github/scripts/translate-github.sh save "$PWD" docs guides
+
+# Check translation status
+./plugins/translate-github/scripts/translate-github.sh status "$PWD"
+```
+
+#### Translation Rules
+
+- Code blocks and inline code are not translated
+- URLs and link addresses are not translated (link text is translated)
+- Naming identifiers (variable names, function names, class names, etc.) are not translated
+- Brand names and proper nouns are not translated
+- Markdown format structure is preserved
+- Technical terms annotated with English original in parentheses on first occurrence
+
+#### Notes
+
+- Supports `.md`, `.txt`, `.rst` file types
+- Translation state stored in `wishos-docs/.translate-state`
+- Re-running after interruption automatically recovers (idempotent design)
+- Automatically excludes `node_modules`, `.git` and other directories
+
 ## Adding a New Plugin
 
 Refer to the structure of `plugins/git-multi-repo`:

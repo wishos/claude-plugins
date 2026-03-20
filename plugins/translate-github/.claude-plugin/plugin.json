@@ -1,0 +1,10 @@
+{
+  "name": "translate-github",
+  "version": "1.0.0",
+  "description": "翻译 GitHub 项目文档（英文→中文），支持增量翻译",
+  "author": {
+    "name": "wishos",
+    "email": ""
+  },
+  "homepage": "https://github.com/wishos/claude-plugins"
+}

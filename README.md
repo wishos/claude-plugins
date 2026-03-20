@@ -55,7 +55,7 @@ plugins/<plugin-name>/
 │   └── plugin.json
 ├── commands/
 │   └── <plugin-name>.md
-└── scripts/
+└── scripts/                    # 可选
     └── <plugin-name>.sh
 ```
 
@@ -63,7 +63,7 @@ plugins/<plugin-name>/
 
 ## 添加新插件
 
-参考 `plugins/git-multi-repo` 的结构创建新插件。
+参考现有插件的结构创建新插件。
 
 ### plugin.json
 
@@ -78,8 +78,8 @@ plugins/<plugin-name>/
 
 ### commands/<plugin-name>.md
 
-定义触发语句和执行步骤。
+定义触发语句和执行步骤。插件逻辑可以直接写在命令文件中（由 Claude 原生工具执行），也可以调用外部脚本。
 
-### scripts/<plugin-name>.sh
+### scripts/<plugin-name>.sh（可选）
 
-实现具体功能的 shell 脚本。
+实现具体功能的 shell 脚本。如果插件逻辑已完全内嵌在命令文件中，则不需要此目录。

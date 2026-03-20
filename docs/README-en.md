@@ -111,7 +111,7 @@ The plugin automatically handles:
 
 ## Adding a New Plugin
 
-Refer to the structure of `plugins/git-multi-repo`:
+Refer to existing plugin structures:
 
 ```
 plugins/<plugin-name>/
@@ -119,7 +119,7 @@ plugins/<plugin-name>/
 │   └── plugin.json          # Plugin metadata
 ├── commands/
 │   └── <plugin-name>.md     # Command definitions and trigger patterns
-└── scripts/
+└── scripts/                   # Optional
     └── <plugin-name>.sh     # Implementation script
 ```
 
@@ -134,7 +134,8 @@ Plugin metadata JSON file, containing:
 ### commands/<plugin-name>.md
 
 Defines when to trigger the plugin and how to execute it. Contains trigger phrase list and execution steps.
+Plugin logic can be embedded directly in the command file (executed by Claude's native tools) or call external scripts.
 
-### scripts/<plugin-name>.sh
+### scripts/<plugin-name>.sh (Optional)
 
-Shell script (usually bash) that implements the actual functionality.
+Shell script (usually bash) that implements the actual functionality. Not required if the plugin logic is fully embedded in the command file.

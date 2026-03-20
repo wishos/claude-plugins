@@ -12,17 +12,13 @@
 
 当用户说 `更新翻译`、`增量翻译`、`update translation` 时：
 
-按照下方「完整工作流」执行（脚本会自动检测增量）。
+按照下方「完整工作流」执行（会自动检测增量）。
 
 ### 查看翻译状态
 
 当用户说 `翻译状态`、`translation status` 时：
 
-执行脚本：
-```
-./plugins/translate-github/scripts/translate-github.sh status "$PWD"
-```
-展示结果给用户。
+按照下方「状态查看流程」执行。
 
 ---
 
@@ -67,48 +63,79 @@
 
 ---
 
+## 关键约定
+
+- **项目根目录** `<PROJECT>`：被翻译的目标项目的根目录，默认为当前工作目录 `$PWD`
+- **输出目录**：`<PROJECT>/wishos-docs/`，镜像源目录结构存放译文
+- **状态文件**：`<PROJECT>/wishos-docs/.translate-state`，记录翻译版本状态
+- **可翻译文件**：扩展名为 `.md`、`.txt`、`.rst` 的文件
+- **排除目录**：`wishos-docs`、`node_modules`、`.git`、`vendor`、`dist`、`build`
+
+### 状态文件格式
+
+`wishos-docs/.translate-state` 是纯文本文件，格式如下：
+
+```
+# translate-github state file
+LAST_COMMIT=<40位git commit hash>
+LAST_RUN=<时间戳>
+DIR=<目录1>
+DIR=<目录2>
+```
+
+---
+
 ## 完整工作流
 
 ### Phase 1：参数收集与初始化
 
-1. 确认被翻译项目的根目录（默认使用当前工作目录 `$PWD`）
-2. 询问用户要翻译哪些目录（如 `docs`、`guides`、`content` 等）
-3. 执行初始化脚本：
-   ```
-   ./plugins/translate-github/scripts/translate-github.sh init "$PWD" <dir1> [dir2...]
-   ```
-4. 确认输出中包含 `READY`，表示初始化成功
+1. 确认被翻译项目的根目录 `<PROJECT>`（默认使用当前工作目录）
+2. 确认 `<PROJECT>` 是 git 仓库（检查 `<PROJECT>/.git` 目录是否存在）
+3. 询问用户要翻译哪些目录（如 `docs`、`guides`、`content` 等）
+4. 验证用户指定的每个目录在 `<PROJECT>` 下存在
+5. 创建 `<PROJECT>/wishos-docs/` 目录（如果不存在），使用 Bash `mkdir -p`
+6. 为每个指定目录，递归镜像其子目录结构到 `wishos-docs/` 下：
+   - 使用 Glob 工具查找指定目录下的所有子目录
+   - 对每个子目录，用 Bash `mkdir -p` 在 `wishos-docs/` 下创建对应目录
+   - 排除 `node_modules`、`.git`、`vendor`、`dist`、`build` 等目录
 
 ### Phase 2：文件发现与翻译计划
 
-5. 执行差异检测脚本：
-   ```
-   ./plugins/translate-github/scripts/translate-github.sh diff "$PWD" <dir1> [dir2...]
-   ```
-6. 解析脚本输出：
-   - `FILE:<路径>` → 需要翻译的文件
-   - `NEW_DIR:<路径>` → 来自新增目录、需要翻译的文件
-   - `DELETED:<路径>` → 源文件已删除
-   - `WARNING:COMMIT_UNREACHABLE` → 上次记录的 commit 不可达，已回退到全量模式
-7. 如果无文件需要翻译（所有计数为 0），告知用户「所有文档已是最新，无需翻译」并结束
-8. 向用户展示翻译计划：
-   - 新增/修改文件数量和清单
-   - 已删除文件（如有）
-   - 确认后开始翻译
+7. 读取状态文件 `<PROJECT>/wishos-docs/.translate-state`（如果存在），提取 `LAST_COMMIT` 和 `DIR=` 列表
+8. 确定待翻译文件：
+
+   **情况 A - 首次翻译**（无状态文件或无 LAST_COMMIT）：
+   - 使用 Glob 工具在每个指定目录下查找 `**/*.md`、`**/*.txt`、`**/*.rst` 文件
+   - 排除 `wishos-docs/`、`node_modules/`、`.git/` 等目录下的文件
+   - 所有找到的文件都需要翻译
+
+   **情况 B - 增量翻译**（有 LAST_COMMIT）：
+   - 先用 Bash 检查 LAST_COMMIT 是否可达：`git -C <PROJECT> cat-file -t <LAST_COMMIT>`
+   - 如果不可达，回退到情况 A（全量模式），并告知用户原因
+   - 如果可达，对每个指定目录：
+     - **已记录目录**（在状态文件 DIR 列表中的）：用 Bash 执行 `git -C <PROJECT> diff --name-only <LAST_COMMIT> HEAD -- <dir>`，筛选 `.md`/`.txt`/`.rst` 文件
+     - **新增目录**（不在状态文件 DIR 列表中的）：走全量模式，Glob 查找所有可翻译文件
+   - 用 Bash 执行 `git -C <PROJECT> diff --name-only --diff-filter=D <LAST_COMMIT> HEAD -- <dirs>` 检测已删除文件
+
+9. 如果无文件需要翻译，告知用户「所有文档已是最新，无需翻译」并结束
+10. 向用户展示翻译计划：
+    - 新增/修改文件数量和清单
+    - 已删除文件（如有）
+    - 等待用户确认后开始翻译
 
 ### Phase 3：逐文件翻译
 
-对每个 `FILE:` 或 `NEW_DIR:` 文件：
+对每个待翻译文件：
 
-9. 读取源文件：`<project-root>/<file-path>`
-10. 按照上方「翻译规则」将内容翻译为中文
-11. 将翻译结果写入：`<project-root>/wishos-docs/<file-path>`
-12. 每完成一个文件，报告进度：`[3/15] ✓ docs/guide.md`
+11. 使用 Read 工具读取源文件：`<PROJECT>/<file-path>`
+12. 按照上方「翻译规则」将内容翻译为中文
+13. 使用 Write 工具将翻译结果写入：`<PROJECT>/wishos-docs/<file-path>`
+14. 每完成一个文件，报告进度：`[3/15] ✓ docs/guide.md`
 
-对 `DELETED:` 文件：
+对已删除文件：
 
-13. 提示用户：源文件 `<file-path>` 已被删除，是否同时删除 `wishos-docs/<file-path>` 下的译文？
-14. 根据用户选择执行删除或保留
+15. 提示用户：源文件已被删除，是否同时删除对应译文？
+16. 如果用户同意，使用工具删除 `<PROJECT>/wishos-docs/<file-path>`
 
 特殊情况处理：
 
@@ -118,11 +145,16 @@
 
 ### Phase 4：保存状态与汇总
 
-15. 执行保存状态脚本：
+17. 使用 Bash 获取当前 commit hash：`git -C <PROJECT> rev-parse HEAD`
+18. 使用 Write 工具写入状态文件 `<PROJECT>/wishos-docs/.translate-state`，内容格式：
     ```
-    ./plugins/translate-github/scripts/translate-github.sh save "$PWD" <dir1> [dir2...]
+    # translate-github state file
+    LAST_COMMIT=<当前commit hash>
+    LAST_RUN=<当前时间戳>
+    DIR=<目录1>
+    DIR=<目录2>
     ```
-16. 输出翻译汇总报告：
+19. 输出翻译汇总报告：
     - 总计翻译 N 个文件
     - 新增 X 个 / 更新 Y 个
     - 删除 Z 个（如有）
@@ -131,15 +163,30 @@
 
 ---
 
+## 状态查看流程
+
+1. 确认项目根目录 `<PROJECT>`
+2. 使用 Read 工具读取 `<PROJECT>/wishos-docs/.translate-state`
+3. 如果文件不存在，告知用户「尚未初始化翻译」
+4. 如果文件存在，解析并展示：
+   - 上次翻译的 commit hash
+   - 上次运行时间
+   - 已翻译的目录列表
+   - 使用 Bash `git -C <PROJECT> diff --name-only <LAST_COMMIT> HEAD -- <dirs>` 检查待翻译变更数量
+
+---
+
 ## 注意事项
 
-- 如果用户没有指定项目根目录，默认使用当前工作目录 `$PWD`
-- 翻译过程中如果被中断，不执行 `save`，下次运行会自动重新检测变更
+- 如果用户没有指定项目根目录，默认使用当前工作目录
+- 翻译过程中如果被中断，不执行 Phase 4（保存状态），下次运行会自动重新检测变更
 - `wishos-docs/` 目录保持与源目录完全一致的目录结构
 - 保持输出美观清晰，使用 Unicode 符号标记进度
+- 所有 git 命令使用 `git -C <PROJECT>` 指定项目目录，不需要 cd 进去
 
 ## 错误处理
 
-- 脚本退出码非 0：读取错误输出，向用户说明具体原因
+- 项目根目录不是 git 仓库：告知用户并终止
+- 指定目录不存在：告知用户具体哪个目录不存在
 - 某个文件翻译失败：记录失败文件，继续翻译其他文件，最后汇报失败清单
-- 翻译被中断：因为 `save` 未执行，下次运行自动恢复（已翻译的文件会被覆盖重译，保证幂等）
+- 翻译被中断：因为状态未保存，下次运行自动恢复（已翻译的文件会被覆盖重译，保证幂等）

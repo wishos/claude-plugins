@@ -42,19 +42,8 @@ wishos 自用的 Claude 插件集合。
 
 **使用**
 
-```bash
-# 初始化翻译（指定翻译 docs 目录）
-./plugins/translate-github/scripts/translate-github.sh init "$PWD" docs
-
-# 查看需要翻译的文件
-./plugins/translate-github/scripts/translate-github.sh diff "$PWD" docs
-
-# 保存翻译状态
-./plugins/translate-github/scripts/translate-github.sh save "$PWD" docs
-
-# 查看翻译状态
-./plugins/translate-github/scripts/translate-github.sh status "$PWD"
-```
+通过 Claude Code 触发，直接说 `/translate-github` 并指定要翻译的目录即可。
+插件会自动处理目录创建、文件发现、增量检测和状态保存。
 
 ---
 

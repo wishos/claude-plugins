@@ -77,22 +77,21 @@ A plugin for translating GitHub project documentation (English to Chinese) with 
 
 #### Usage
 
-```bash
-# Initialize translation environment (translate docs and guides directories)
-./plugins/translate-github/scripts/translate-github.sh init "$PWD" docs guides
+Triggered through Claude Code. Simply say `/translate-github` and specify the directories to translate.
 
-# List all translatable files
-./plugins/translate-github/scripts/translate-github.sh list "$PWD" docs guides
-
-# Detect changed files for incremental translation
-./plugins/translate-github/scripts/translate-github.sh diff "$PWD" docs guides
-
-# Save translation state
-./plugins/translate-github/scripts/translate-github.sh save "$PWD" docs guides
-
-# Check translation status
-./plugins/translate-github/scripts/translate-github.sh status "$PWD"
 ```
+# Example conversation
+User: /translate-github
+Claude: Please confirm the project root and directories to translate
+User: Translate the docs and guides directories
+Claude: (automatically performs init, file discovery, translation, state save)
+```
+
+The plugin automatically handles:
+- Creating `wishos-docs/` output directory with mirrored directory structure
+- Detecting git version differences to determine files needing translation
+- Reading, translating, and writing each file
+- Saving translation state (git commit hash) for incremental translation
 
 #### Translation Rules
 

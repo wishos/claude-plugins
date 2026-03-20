@@ -41,6 +41,28 @@ plugins/<plugin-name>/
 - **batch-git**: Batch operate on multiple git repositories (pull all, switch branches)
 - **translate-github**: Translate GitHub project docs (EN→CN) with incremental translation support
 
+## Skill Structure
+
+Each plugin has a corresponding skill under `skills/` for use with AI tools that support the SKILL.md format (e.g., Qoder). Skills mirror the plugin's functionality but use tool-agnostic descriptions.
+
+```
+skills/<skill-name>/
+├── SKILL.md                    # Skill definition (YAML frontmatter + workflow)
+└── references/                 # Optional: large reference documents
+    └── *.md
+```
+
+### SKILL.md Format
+
+- **Frontmatter** (YAML): `name` (kebab-case), `description` (trigger phrases), `version`
+- **Body**: Overview, workflow steps, notes — written for AI, not humans
+- **Key rule**: Do NOT reference Claude-specific tool names (Glob, Bash, Read, Write, Edit). Use generic descriptions instead.
+- **Large content**: Move to `references/` directory and reference from SKILL.md
+
+### When Adding a New Plugin
+
+Always create a corresponding skill in `skills/<plugin-name>/SKILL.md` that mirrors the plugin's functionality. This ensures the tool works across both Claude Code and other AI coding tools.
+
 ## Common Patterns
 
 - Scripts use color codes for output formatting (RED, GREEN, YELLOW)

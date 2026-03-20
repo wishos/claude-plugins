@@ -49,6 +49,11 @@ plugins/<plugin-name>/
 │   └── <plugin-name>.md
 └── scripts/                    # 可选
     └── <plugin-name>.sh
+
+skills/<skill-name>/
+├── SKILL.md                    # 技能定义（YAML frontmatter + 工作流）
+└── references/                 # 可选：大型参考文档
+    └── *.md
 ```
 
 ---

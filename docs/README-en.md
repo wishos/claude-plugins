@@ -118,6 +118,15 @@ plugins/<plugin-name>/
     └── <plugin-name>.sh     # Implementation script
 ```
 
+When creating a new plugin, always create a corresponding SKILL.md skill file under `skills/`.
+
+```
+skills/<skill-name>/
+├── SKILL.md                   # Skill definition (YAML frontmatter + workflow)
+└── references/                # Optional: large reference documents
+    └── *.md
+```
+
 ### plugin.json
 
 Plugin metadata JSON file, containing:

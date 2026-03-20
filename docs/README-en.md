@@ -4,9 +4,9 @@ A collection of custom Claude plugins for wishos.
 
 ## Plugins
 
-### git-multi-repo
+### batch-git
 
-A plugin for batch managing multiple git repositories.
+A plugin for batch operating on multiple git repositories.
 
 #### Features
 
@@ -15,29 +15,24 @@ A plugin for batch managing multiple git repositories.
 
 #### Trigger Phrases
 
-**Batch Update**:
-- 帮我批量更新 git库 (帮我批量更新 git 库)
+**Batch Update** (`/batch-git:pull`):
+- 帮我批量更新 git 库
 - 批量更新所有 git 仓库
 - update all git repos
 - pull all git
 
-**Batch Switch Branch**:
-- 批量切换到 xxx 分支 (批量切换到 xxx 分支)
+**Batch Switch Branch** (`/batch-git:switch`):
+- 批量切换到 xxx 分支
 - 切换所有 git 库到某分支
 - switch all git repos to branch
 
 #### Usage
 
-```bash
-# Batch update (default: current directory)
-./plugins/git-multi-repo/scripts/git-multi-repo.sh "$PWD"
+Triggered through Claude Code:
+- `/batch-git:pull` — Batch update all git repositories
+- `/batch-git:switch` — Batch switch branches for all git repositories
 
-# Batch update specified directory
-./plugins/git-multi-repo/scripts/git-multi-repo.sh /path/to/dir
-
-# Batch switch branch
-./plugins/git-multi-repo/scripts/git-multi-repo.sh "$PWD" branch-name
-```
+The plugin automatically finds all git repositories under the target directory and operates on each one.
 
 #### Notes
 

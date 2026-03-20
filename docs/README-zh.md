@@ -4,9 +4,9 @@ wishos 自用的 Claude 插件集合。
 
 ## 插件列表
 
-### git-multi-repo
+### batch-git
 
-批量管理多个 git 仓库的插件。
+批量操作多个 git 仓库的插件。
 
 #### 功能
 
@@ -15,29 +15,24 @@ wishos 自用的 Claude 插件集合。
 
 #### 触发语句
 
-**批量更新**：
+**批量更新**（`/batch-git:pull`）：
 - 帮我批量更新 git 库
 - 批量更新所有 git 仓库
 - update all git repos
 - pull all git
 
-**批量切换分支**：
+**批量切换分支**（`/batch-git:switch`）：
 - 批量切换到 xxx 分支
 - 切换所有 git 库到某分支
 - switch all git repos to branch
 
 #### 使用方式
 
-```bash
-# 批量更新（默认当前目录）
-./plugins/git-multi-repo/scripts/git-multi-repo.sh "$PWD"
+通过 Claude Code 触发：
+- `/batch-git:pull` — 批量更新所有 git 仓库
+- `/batch-git:switch` — 批量切换所有 git 仓库的分支
 
-# 批量更新指定目录
-./plugins/git-multi-repo/scripts/git-multi-repo.sh /path/to/dir
-
-# 批量切换分支
-./plugins/git-multi-repo/scripts/git-multi-repo.sh "$PWD" branch-name
-```
+插件会自动查找目标目录下的所有 git 仓库并逐个执行操作。
 
 #### 注意事项
 

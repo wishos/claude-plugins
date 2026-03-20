@@ -107,35 +107,66 @@ DIR=<目录2>
    **情况 A - 首次翻译**（无状态文件或无 LAST_COMMIT）：
    - 使用 Glob 工具在每个指定目录下查找 `**/*.md`、`**/*.txt`、`**/*.rst` 文件
    - 排除 `wishos-docs/`、`node_modules/`、`.git/` 等目录下的文件
-   - 所有找到的文件都需要翻译
+   - 所有找到的文件标记为「新增」，需要全文翻译
 
    **情况 B - 增量翻译**（有 LAST_COMMIT）：
    - 先用 Bash 检查 LAST_COMMIT 是否可达：`git -C <PROJECT> cat-file -t <LAST_COMMIT>`
    - 如果不可达，回退到情况 A（全量模式），并告知用户原因
    - 如果可达，对每个指定目录：
-     - **已记录目录**（在状态文件 DIR 列表中的）：用 Bash 执行 `git -C <PROJECT> diff --name-only <LAST_COMMIT> HEAD -- <dir>`，筛选 `.md`/`.txt`/`.rst` 文件
-     - **新增目录**（不在状态文件 DIR 列表中的）：走全量模式，Glob 查找所有可翻译文件
+     - **已记录目录**（在状态文件 DIR 列表中的）：
+       - 用 Bash 执行 `git -C <PROJECT> diff --name-only --diff-filter=A <LAST_COMMIT> HEAD -- <dir>` 筛选新增文件（标记为「新增」）
+       - 用 Bash 执行 `git -C <PROJECT> diff --name-only --diff-filter=M <LAST_COMMIT> HEAD -- <dir>` 筛选修改文件（标记为「修改」）
+       - 分别筛选 `.md`/`.txt`/`.rst` 文件
+     - **新增目录**（不在状态文件 DIR 列表中的）：走全量模式，Glob 查找所有可翻译文件，全部标记为「新增」
    - 用 Bash 执行 `git -C <PROJECT> diff --name-only --diff-filter=D <LAST_COMMIT> HEAD -- <dirs>` 检测已删除文件
 
 9. 如果无文件需要翻译，告知用户「所有文档已是最新，无需翻译」并结束
 10. 向用户展示翻译计划：
-    - 新增/修改文件数量和清单
+    - 新增文件数量和清单（将全文翻译）
+    - 修改文件数量和清单（将仅翻译变更部分）
     - 已删除文件（如有）
     - 等待用户确认后开始翻译
 
 ### Phase 3：逐文件翻译
 
-对每个待翻译文件：
+#### 3a. 新增文件 — 全文翻译
+
+对每个标记为「新增」的文件：
 
 11. 使用 Read 工具读取源文件：`<PROJECT>/<file-path>`
-12. 按照上方「翻译规则」将内容翻译为中文
+12. 按照上方「翻译规则」将完整内容翻译为中文
 13. 使用 Write 工具将翻译结果写入：`<PROJECT>/wishos-docs/<file-path>`
-14. 每完成一个文件，报告进度：`[3/15] ✓ docs/guide.md`
+14. 报告进度：`[3/15] ✓ docs/new-guide.md (新增，全文翻译)`
 
-对已删除文件：
+#### 3b. 修改文件 — 仅翻译变更部分
 
-15. 提示用户：源文件已被删除，是否同时删除对应译文？
-16. 如果用户同意，使用工具删除 `<PROJECT>/wishos-docs/<file-path>`
+对每个标记为「修改」的文件：
+
+15. 使用 Bash 获取该文件的具体变更内容：
+    ```
+    git -C <PROJECT> diff <LAST_COMMIT> HEAD -- <file-path>
+    ```
+16. 分析 diff 输出，识别变更类型：
+    - **新增行**（`+` 开头的行）：需要翻译的新内容
+    - **删除行**（`-` 开头的行）：需要从译文中移除的内容
+    - **上下文行**（空格开头）：未变更的内容，用于定位变更位置
+17. 使用 Read 工具读取已有的译文文件：`<PROJECT>/wishos-docs/<file-path>`
+18. 根据 diff 信息，对已有译文进行局部更新：
+    - 对于新增的段落/行：按「翻译规则」翻译后，插入到译文的对应位置
+    - 对于删除的段落/行：从译文中移除对应的翻译内容
+    - 对于修改的段落/行：找到译文中对应的翻译，用新翻译替换
+    - 利用 diff 的上下文行和行号定位译文中的精确位置
+19. 使用 Edit 工具对译文文件进行局部修改（而非 Write 重写整个文件）
+20. 报告进度：`[5/15] ✓ docs/guide.md (修改，更新 3 处变更)`
+
+**定位策略**：通过 diff 的 hunk header（`@@ -a,b +c,d @@`）和上下文行，在译文中找到对应位置。如果译文结构与源文件一一对应（Markdown 格式保持不变），可以按段落/标题/列表项进行精确匹配。
+
+**回退机制**：如果修改过于复杂（如文件结构大幅重组），或无法精确定位译文中的对应位置，则回退到全文重新翻译。
+
+#### 3c. 已删除文件
+
+21. 提示用户：源文件已被删除，是否同时删除对应译文？
+22. 如果用户同意，使用工具删除 `<PROJECT>/wishos-docs/<file-path>`
 
 特殊情况处理：
 
@@ -145,8 +176,8 @@ DIR=<目录2>
 
 ### Phase 4：保存状态与汇总
 
-17. 使用 Bash 获取当前 commit hash：`git -C <PROJECT> rev-parse HEAD`
-18. 使用 Write 工具写入状态文件 `<PROJECT>/wishos-docs/.translate-state`，内容格式：
+23. 使用 Bash 获取当前 commit hash：`git -C <PROJECT> rev-parse HEAD`
+24. 使用 Write 工具写入状态文件 `<PROJECT>/wishos-docs/.translate-state`，内容格式：
     ```
     # translate-github state file
     LAST_COMMIT=<当前commit hash>
@@ -154,9 +185,9 @@ DIR=<目录2>
     DIR=<目录1>
     DIR=<目录2>
     ```
-19. 输出翻译汇总报告：
+25. 输出翻译汇总报告：
     - 总计翻译 N 个文件
-    - 新增 X 个 / 更新 Y 个
+    - 新增 X 个（全文翻译） / 更新 Y 个（局部更新）
     - 删除 Z 个（如有）
     - 保存的 commit hash
     - 提示：下次运行时将从此 commit 开始增量翻译

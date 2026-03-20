@@ -15,32 +15,51 @@
 
 - 使用 Glob 工具查找 `<TARGET>` 下所有 `.git` 目录：`**/.git`
 - 每个 `.git` 目录的父目录即为一个 git 仓库
-- 提取仓库名称（目录名）和路径
-- 向用户报告：找到 N 个 git 仓库
+- 提取仓库名称（目录名）和路径，记录为列表
 
-### 3. 逐个执行 git pull
+### 3. 一次性执行所有 git pull 操作
 
-对每个找到的 git 仓库，依次执行：
+**重要：将所有仓库的操作合并到一条 Bash 命令中执行，避免多次确认。**
 
-1. **检查未提交更改**：用 Bash 执行 `git -C <repo-path> diff-index --quiet HEAD -- 2>/dev/null`
-   - 如果退出码非 0，说明有未提交更改，跳过该仓库并报告：`✗ <repo-name> │ 本地有未提交的更改`
-   - 继续处理下一个仓库
+将步骤 2 中找到的所有仓库路径拼接成一个 Bash 脚本，用**单次 Bash 调用**执行所有操作。脚本模板如下：
 
-2. **执行 pull**：用 Bash 执行 `git -C <repo-path> pull 2>&1`
-   - 成功且输出包含 "Already up to date"：报告 `✓ <repo-name> │ Already up to date`
-   - 成功且有更新：报告 `✓ <repo-name> │ <更新信息>`
-   - 失败：报告 `✗ <repo-name> │ <错误信息>`
+```bash
+success=0; fail=0; total=0; fail_list=""
+for repo in "<repo-path-1>" "<repo-path-2>" "<repo-path-3>"; do
+  total=$((total+1))
+  name=$(basename "$repo")
+  if ! git -C "$repo" diff-index --quiet HEAD -- 2>/dev/null; then
+    echo "✗ $name │ 本地有未提交的更改"
+    fail=$((fail+1))
+    fail_list="$fail_list\n  - $name (未提交更改)"
+    continue
+  fi
+  output=$(git -C "$repo" pull 2>&1)
+  if [ $? -eq 0 ]; then
+    echo "✓ $name │ $output"
+    success=$((success+1))
+  else
+    echo "✗ $name │ $output"
+    fail=$((fail+1))
+    fail_list="$fail_list\n  - $name ($output)"
+  fi
+done
+echo ""; echo "===== 汇总 ====="
+echo "总计: $total 个仓库"
+echo "成功: $success 个"
+echo "失败: $fail 个"
+if [ -n "$fail_list" ]; then echo -e "失败清单:$fail_list"; fi
+```
 
-### 4. 输出汇总报告
+将 `<repo-path-1>` `<repo-path-2>` 等替换为步骤 2 中发现的实际仓库绝对路径。
 
-完成所有仓库处理后，输出统计：
-- 总计 N 个仓库
-- 成功 X 个
-- 失败 Y 个（有未提交更改或 pull 失败）
-- 如果有失败仓库，列出失败清单
+### 4. 展示结果
+
+将 Bash 输出直接展示给用户即可，脚本已包含汇总信息。
 
 ## 注意事项
 
 - 所有 git 命令使用 `git -C <path>` 指定仓库目录，不需要 cd
+- **关键：必须将所有仓库操作合并为单次 Bash 调用，不能逐个仓库单独调用 Bash**
 - 保持输出美观清晰
 - 不修改任何仓库内容，只执行 git pull
